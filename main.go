@@ -21,5 +21,7 @@ func main() {
 	v1.PUT("/want", wanted)
 	v1.GET("/one/:id", findOne)
 	v1.GET("/anynew", anynew)
+	v1.GET("/series", getSeries)
+	v1.GET("/sone/:id", getSone)
 	r.Run(":3000") // listen and serve on 0.0.0.0:3000
 }
