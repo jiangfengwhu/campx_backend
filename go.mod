@@ -1,4 +1,4 @@
-module github.com/jiangfengwhu/campus-help-backend
+module github.com/jiangfengwhu/campx_backend
 
 go 1.13
 
