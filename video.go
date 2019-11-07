@@ -12,30 +12,30 @@ import (
 )
 
 type seriesModel struct {
-	Name       string   `json:"name" bson:"name"`
-	ID         string   `json:"id" bson:"_id,omitempty"`
-	OriginName string   `json:"origin_name" bson:"origin_name"`
-	Year       string   `json:"year" bson:"year"`
-	First      string   `json:"first" bson:"first"`
-	Tags       []string `json:"tags" bson:"tags"`
-	Region     string   `json:"region" bson:"region"`
-	Actors     []string `json:"actors" bson:"actors"`
-	Desc       string   `json:"desc" bson:"desc"`
-	End        bool     `json:"end" bson:"end"`
-	Videos     []int    `json:"videos" bson:"videos"`
-	View       int      `json:"view" bson:"view"`
+	Name       string         `json:"name" bson:"name"`
+	ID         string         `json:"id" bson:"_id,omitempty"`
+	OriginName string         `json:"origin_name" bson:"origin_name"`
+	Year       string         `json:"year" bson:"year"`
+	First      string         `json:"first" bson:"first"`
+	Tags       []string       `json:"tags" bson:"tags"`
+	Region     string         `json:"region" bson:"region"`
+	Actors     []string       `json:"actors" bson:"actors"`
+	Desc       string         `json:"desc" bson:"desc"`
+	End        bool           `json:"end" bson:"end"`
+	Videos     map[string]int `json:"videos" bson:"videos"`
+	View       int            `json:"view" bson:"view"`
 }
 type outSeriesModel struct {
-	Name       string   `json:"name" bson:"name"`
-	ID         string   `json:"id" bson:"_id,omitempty"`
-	OriginName string   `json:"origin_name" bson:"origin_name"`
-	Region     string   `json:"region" bson:"region"`
-	Actors     []string `json:"actors" bson:"actors"`
-	End        bool     `json:"end" bson:"end"`
-	Videos     []int    `json:"videos" bson:"videos"`
-	Year       string   `json:"year" bson:"year"`
-	Last       int64    `json:"last" bson:"last"`
-	View       int      `json:"view" bson:"view"`
+	Name       string         `json:"name" bson:"name"`
+	ID         string         `json:"id" bson:"_id,omitempty"`
+	OriginName string         `json:"origin_name" bson:"origin_name"`
+	Region     string         `json:"region" bson:"region"`
+	Actors     []string       `json:"actors" bson:"actors"`
+	End        bool           `json:"end" bson:"end"`
+	Videos     map[string]int `json:"videos" bson:"videos"`
+	Year       string         `json:"year" bson:"year"`
+	Last       int64          `json:"last" bson:"last"`
+	View       int            `json:"view" bson:"view"`
 }
 type reqSModel struct {
 	Region string `form:"region"`
@@ -80,11 +80,6 @@ func getSeries(c *gin.Context) {
 }
 func getSone(c *gin.Context) {
 	id, _ := c.Params.Get("id")
-	// id, err := primitive.ObjectIDFromHex(val)
-	// if err != nil {
-	// 	c.JSON(http.StatusOK, gin.H{"status": false, "msg": "id错误"})
-	// 	return
-	// }
 	var re seriesModel
 	if err := dataBase.Collection("series").FindOneAndUpdate(context.Background(), bson.D{{"_id", id}}, bson.D{{"$inc", bson.D{{"view", 1}}}}).Decode(&re); err != nil {
 		c.JSON(http.StatusOK, gin.H{"status": false, "msg": err.Error()})
