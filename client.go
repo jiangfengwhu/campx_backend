@@ -175,13 +175,14 @@ func serveWs(hub *Hub, c *gin.Context) {
 	var mux sync.Mutex
 	id := false
 	mux.Lock()
-	if len(hub.clients[roomSq]) >= 2 {
+	rl := len(hub.clients[roomSq])
+	if rl >= 2 || rl == 0 {
 		roomSq++
-		mux.Unlock()
 		id = true
 	}
 	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256), id: id, room: roomSq, gender: *params.Gender}
 	client.hub.register <- client
+	mux.Unlock()
 
 	// Allow collection of memory referenced by the caller by doing all work in
 	// new goroutines.
