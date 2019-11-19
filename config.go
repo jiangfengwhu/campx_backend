@@ -8,6 +8,7 @@ import (
 )
 
 var globalConf confModel
+var roomSq uint64
 
 type confModel struct {
 	RecapSecure string `json:"recapSecure"`
