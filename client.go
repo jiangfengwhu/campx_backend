@@ -89,14 +89,18 @@ func (c *Client) readPump() {
 		json.Unmarshal(message, &re)
 		re["from"] = c.id
 		msgHeader := re["header"].(string)
+		mid := re["mid"].(float64)
+		delete(re, "mid")
 		switch msgHeader {
-		case "text":
+		case "text", "img":
 			newmsg, _ := json.Marshal(&re)
 			tomessage := &BroadCast{
-				msg: newmsg,
-				to:  c.room,
+				msg:  newmsg,
+				to:   c.room,
+				from: c.id,
+				mid:  mid,
 			}
-			c.hub.broadcast <- tomessage
+			c.hub.broadcastTo <- tomessage
 			dataBase.Collection("anchats").InsertOne(context.Background(), re)
 		default:
 			log.Println("default")
