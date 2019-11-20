@@ -51,8 +51,8 @@ func (h *Hub) run() {
 				h.clients[client.room][client] = true
 			} else {
 				for cls := range h.clients[client.room] {
-					cls.send <- []byte(`{"header":"conn", "gender":` + strconv.FormatBool(client.gender) + `,"from":` + strconv.FormatBool(client.id) + `}`)
-					client.send <- []byte(`{"header":"conn", "gender":` + strconv.FormatBool(cls.gender) + `,"from":` + strconv.FormatBool(cls.id) + `}`)
+					cls.send <- []byte(`{"header":"conn","room":` + strconv.FormatUint(client.room, 10) + `,"gender":` + strconv.FormatBool(client.gender) + `,"from":` + strconv.FormatBool(client.id) + `}`)
+					client.send <- []byte(`{"header":"conn","room":` + strconv.FormatUint(client.room, 10) + `,"gender":` + strconv.FormatBool(cls.gender) + `,"from":` + strconv.FormatBool(cls.id) + `}`)
 				}
 				h.clients[client.room][client] = true
 			}

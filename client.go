@@ -142,11 +142,11 @@ func (c *Client) writePump() {
 			w.Write(message)
 
 			// Add queued chat messages to the current websocket message.
-			// n := len(c.send)
-			// for i := 0; i < n; i++ {
-			// 	w.Write(newline)
-			// 	w.Write(<-c.send)
-			// }
+			n := len(c.send)
+			for i := 0; i < n; i++ {
+				w.Write(newline)
+				w.Write(<-c.send)
+			}
 
 			if err := w.Close(); err != nil {
 				return
@@ -161,7 +161,8 @@ func (c *Client) writePump() {
 }
 
 type wsModel struct {
-	Gender *bool `form:"gender" binding:"required"`
+	Gender *bool  `form:"gender" binding:"required"`
+	Room   uint64 `form:"room"`
 }
 
 // serveWs handles websocket requests from the peer.
@@ -176,18 +177,29 @@ func serveWs(hub *Hub, c *gin.Context) {
 		log.Println(err)
 		return
 	}
-	var mux sync.Mutex
 	id := false
-	mux.Lock()
-	rl := len(hub.clients[roomSq])
-	if rl >= 2 || rl == 0 {
-		roomSq++
-		id = true
+	var client *Client
+	if params.Room > 0 && len(hub.clients[params.Room]) == 1 {
+		for cl := range hub.clients[params.Room] {
+			id = !cl.id
+		}
+		client = &Client{hub: hub, conn: conn, send: make(chan []byte, 256), id: id, room: params.Room, gender: *params.Gender}
+		client.hub.register <- client
+	} else {
+		var mux sync.Mutex
+		mux.Lock()
+		var room uint64
+		if len(hub.clients[roomSq]) == 1 {
+			room = roomSq
+			roomSq++
+		} else {
+			id = true
+			room = roomSq
+		}
+		client = &Client{hub: hub, conn: conn, send: make(chan []byte, 256), id: id, room: room, gender: *params.Gender}
+		client.hub.register <- client
+		mux.Unlock()
 	}
-	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256), id: id, room: roomSq, gender: *params.Gender}
-	client.hub.register <- client
-	mux.Unlock()
-
 	// Allow collection of memory referenced by the caller by doing all work in
 	// new goroutines.
 	go client.writePump()
