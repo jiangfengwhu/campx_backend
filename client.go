@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"strconv"
 	"sync"
 	"time"
 
@@ -63,13 +62,6 @@ type Client struct {
 // reads from this goroutine.
 func (c *Client) readPump() {
 	defer func() {
-		// total := len(c.hub.clients[c.room]) - 1
-		msg := []byte(`{"header":"close", "from":"` + strconv.FormatBool(c.id) + `"}`)
-		tomessage := &BroadCast{
-			msg: msg,
-			to:  c.room,
-		}
-		c.hub.broadcast <- tomessage
 		c.hub.unregister <- c
 		c.conn.Close()
 	}()
@@ -79,9 +71,17 @@ func (c *Client) readPump() {
 	for {
 		_, message, err := c.conn.ReadMessage()
 		if err != nil {
-			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				log.Printf("error: %v", err)
+			log.Println(err)
+			condi := "close"
+			if websocket.IsCloseError(err, 3888) {
+				condi = "leave"
 			}
+			msg := []byte(`{"header":"` + condi + `"}`)
+			tomessage := &BroadCast{
+				msg: msg,
+				to:  c.room,
+			}
+			c.hub.broadcast <- tomessage
 			break
 		}
 		var re map[string]interface{}
